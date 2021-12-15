@@ -1,58 +1,51 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace OOP_Exam.Models
 {
-    public class User : IComparable
+    public class User : IEquatable<User>, IComparable
     {
-        private const string _usernamePattern = @"^[0-9a-z_]+$"; // Not the idiomatic placement for these patterns
+        private const string _usernamePattern = @"^[0-9a-z_]+$";
         private const string _emailPattern = @"^[a-zA-Z0-9\._-]+@[a-zA-Z0-9]+[a-zA-Z0-9-]?\.[a-zA-Z\.-]+[a-zA-Z0-9]$";
-        private static int _nextID = 1;
-        private string _firstname;
-        private string _lastname;
-        private string _username;
-        private string _email;
+        private static uint _nextId = 1;
+        private uint _id;
+        private string _username = "";
+        private string _email = "";
 
-        public User(int id, string firstname, string lastname, string username, int balance, string email)
+        public User() : this("ukendt", "ukendt", "ukendt", "ukendt@ukendt.dk", 0) { }
+
+        public User(string firstname, string lastname, string username, string email, int balance)
         {
-            ID = id;
+            Id = _nextId++;
             Firstname = firstname;
             Lastname = lastname;
-            Balance = balance * 0.01M;
             Username = username;
             Email = email;
+            Balance = balance;
         }
 
-
-
-        public int CompareTo(object obj)
+        public uint Id
         {
-            return obj is User user ? ID.CompareTo(user.ID) : 1;
+            get { return _id; }
+            init
+            {
+                if (value < _nextId - 1)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), $"Id already taken {value}");
+                }
+                _nextId = value + 1;
+                _id = value;
+            }
         }
 
-        public int ID { get; }
+        public string Firstname { get; init; } = "";
 
-        public string Firstname
-        {
-            get => _firstname;
-            set => _firstname = value ?? "";
-        }
-
-        public string Lastname
-        {
-            get => _lastname;
-            set => _lastname = value ?? "";
-        }
+        public string Lastname { get; init; } = "";
 
         public string Username
         {
             get { return _username; }
-            set
+            init
             {
                 if (!Regex.IsMatch(value, _usernamePattern))
                 {
@@ -61,10 +54,11 @@ namespace OOP_Exam.Models
                 _username = value;
             }
         }
+
         public string Email
         {
             get { return _email; }
-            set
+            init
             {
                 if (!Regex.IsMatch(value, _emailPattern))
                 {
@@ -74,37 +68,33 @@ namespace OOP_Exam.Models
             }
         }
 
-        public decimal Balance { get; set; }
+        public int Balance { get; set; }
 
-        public override bool Equals(object obj)
+
+        public int CompareTo(object? obj)
         {
-            return obj is User user &&
-                   ID.Equals(user.ID);
+            return obj is User user ? Id.CompareTo(user.Id) : 1;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return Equals(obj as User);
+        }
+
+        public bool Equals(User? other)
+        {
+            return other != null &&
+                   Username == other.Username;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(ID);
+            return HashCode.Combine(Username);
         }
 
-        public override string ToString() // Use string.Format() or string interpolation instead?
+        public override string ToString()
         {
-            StringBuilder sb = new();
-            sb.Append(Firstname);
-            if (Firstname.Length > 0) sb.Append(' ');
-
-            sb.Append(Lastname);
-            if (Lastname.Length > 0) sb.Append(' ');
-
-            sb.Append($"({Email})");
-
-            return sb.ToString();
-        }
-
-        public static User FromCsvString(string csvalues, char csvSeparator)
-        {
-            string[] values = csvalues.Split(csvSeparator);
-            return new User(Convert.ToInt32(values[0]), values[1], values[2], values[3], Convert.ToInt32(values[4]), values[5]);
+            return $"{Firstname} {Lastname} {Email}";
         }
     }
 }

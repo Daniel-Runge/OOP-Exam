@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace OOP_Exam.Services
 {
-    interface ICsvSerdeService
+    public interface ICsvSerdeService
     {
-        IEnumerable<T> Deserialize<T>(string path, char delimiter);
+        IEnumerable<T> Deserialize<T>(string path, char delimiter) where T: new();
         void Serialize<T>(string path, char delimiter, IEnumerable<T> value);
     }
 }

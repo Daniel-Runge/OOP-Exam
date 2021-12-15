@@ -9,58 +9,63 @@ namespace OOP_Exam.Models
 {
     public class Product
     {
-        private static int _nextID = 1;
-        private decimal _price;
+        private static uint _nextId = 1;
+        private uint _id;
+        private uint _price;
+        private string _name = "";
 
-        private Product()
+        public Product() : this("", 0, 0)
         {
-            ID = _nextID++;
         }
 
-        public Product(int id, string name, int price, int active) : this()
+        public Product(string name, uint price, int active)
         {
-            ID = id;
-            Name = name ?? "";
-            Price = price * 0.01M;
-            Active = active == 1;
+            Id = _nextId++;
+            Name = name;
+            Price = price;
+            Active = active;
         }
 
-        public int ID { get; }
-        public string Name { get; init; }
-        public decimal Price
+        public uint Id
         {
-            get => _price;
-            set => _price = value < 0 ? 0 : value;
+            get { return _id; }
+            init
+            {
+                if (value < _nextId - 1)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), $"Id already taken {value}");
+                }
+                _nextId = value + 1;
+                _id = value;
+            }
         }
-        // In the data, this is handled by a zero or 1 value. This got me thinking, it might very well be expandable to have an amount instead. Automate restock alerts?
-        public virtual bool Active { get; set; }
-        public bool CanBeBoughtOnCredit { get; set; } // There is no equivalent field in the data
+        public string Name
+        {
+            get => _name;
+            init => _name = CleanString(value ?? "");
+        }
+        public uint Price
+        {
+            get { return _price; }
+            set { _price = value; }
+        }
+        public virtual int Active { get; set; } = 0;
+        public bool CanBeBoughtOnCredit { get; set; } = false;
 
         public override string ToString() // Fix magic numbers. Should be calculated to longest ID and name, or removed completely
         {
-            return $"{ID,-4} | {Name,-40} | {Price,13:C2}"; //This shit puts kr. behind automatically! 
+            return $"{Id,-4} | {Name,-40} | {Price * 0.01M,13:C2}";
         }
 
-        public static Product FromCsvString(string csvalues, char csvSeparator)
-        {
-            string[] values = csvalues.Split(csvSeparator);
-            return new Product()
-            {
-                Name = CleanStringFromCsv(values[1]),
-                Price = Convert.ToDecimal(values[2]) * 0.01M,
-                Active = Convert.ToInt32(values[3]) == 1
-
-            };
-        }
         private static string RemoveHtmlTags(string source)
         {
             return Regex.Replace(source, "<.*?>", string.Empty);
         }
 
-        public static string CleanStringFromCsv(string source)
+        public static string CleanString(string source)
         {
             string htmlTagFreeString = RemoveHtmlTags(source);
-            return htmlTagFreeString.Trim('"');
+            return htmlTagFreeString.Trim('"').Trim();
         }
     }
 }

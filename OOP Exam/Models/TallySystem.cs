@@ -1,4 +1,6 @@
-﻿using System;
+﻿using OOP_Exam.Exceptions;
+using OOP_Exam.Services;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -10,70 +12,74 @@ namespace OOP_Exam.Models
 {
     public class TallySystem : ITallySystem
     {
-        public IEnumerable<Product> ActiveProducts { get; }
-        public IDictionary<int, Product> Products { get; }
-        public IDictionary<string, User> Users { get; }
-        public event UserBalanceNotification UserBalanceWarning;
-
-        public InsertCashTransaction AddCreditsToAccount(User user, int amount)
+        public TallySystem(ICsvSerdeService csvHandler)
         {
-            throw new NotImplementedException();
+            Transactions = new List<Transaction>();
+            Products = csvHandler
+                .Deserialize<Product>(@"Data\products.csv", ';')
+                .ToDictionary(product => product.Id);
+            Users = csvHandler
+                .Deserialize<User>(@"Data\users.csv", ',')
+                .ToDictionary(user => user.Username);
+        }
+
+        public IEnumerable<Product> ActiveProducts => Products.Values.Where(product => product.Active == 1);
+        public IDictionary<uint, Product> Products { get; }
+        public IDictionary<string, User> Users { get; }
+        public List<Transaction> Transactions { get; }
+
+        public event UserBalanceNotification? UserBalanceWarning; // EVENT!!
+        public InsertCashTransaction AddCreditsToAccount(User user, uint amount)
+        {
+            InsertCashTransaction transation = new(user, amount);
+            ExecuteTransaction(transation);
+            return transation;
         }
 
         public BuyTransaction BuyProduct(User user, Product product)
         {
-            return new BuyTransaction(user, product);
-
+            BuyTransaction transaction = new(user, product);
+            ExecuteTransaction(transaction);
+            return transaction;
         }
 
-        public Product GetProductByID(int id)
+        public Product GetProductByID(uint id)
         {
-            return Products.TryGetValue(id, out Product result)
+            return Products.TryGetValue(id, out var result)
                 ? result
-                : throw new Exception();
+                : throw new NonExistentProductException(id);
         }
 
         public IEnumerable<Transaction> GetTransactions(User user, int count)
         {
-            throw new NotImplementedException();
+            return Enumerable.Reverse(Transactions)
+                .Where(transaction => transaction.User == user && transaction is BuyTransaction)
+                .Take(count);
+            //return Transactions.Where(transaction => transaction.User == user)
+            //    .Reverse()
+            //    .Take(count);
         }
 
         public User GetUserByUsername(string username)
         {
-            return Users.TryGetValue(username, out User result)
-                ? result
-                : throw new Exception();
+            if (Users.TryGetValue(username, out var user))
+            {
+                return user;
+            }
+            throw new UserNotFoundException(username);
         }
 
-        public User GetUsers(Func<User, bool> predicate)
+        public IEnumerable<User> GetUsers(Func<User, bool> predicate)
         {
-            throw new NotImplementedException();
+            return Users.Values.Where(user => predicate(user));
         }
 
-        private static void ExecuteTransaction(Transaction transaction) // VERY unfinished
+        private void ExecuteTransaction(Transaction transaction)
         {
             transaction.Execute();
-        }
-        private static Dictionary<int, Product> ProductsFromCsvFile()
-        {
-            return File.ReadAllLines(@"Data\products.csv")
-                .Skip(1)
-                .Select(line => Product.FromCsvString(line, ';'))
-                .ToDictionary(product => product.ID);
+            if (transaction.User.Balance < 5000) UserBalanceWarning?.Invoke(transaction.User, transaction.User.Balance * 0.01M);
+            Transactions.Add(transaction);
         }
 
-        private static Dictionary<string, User> UsersFromCsvFile()
-        {
-            Dictionary<string, User> usersDictionary = new();
-            string[] csvUserLines = File.ReadAllLines(@"Data\users.csv");
-
-            foreach (string line in csvUserLines[1..])
-            {
-                User user = User.FromCsvString(line, ',');
-                usersDictionary.Add(user.Username, user);
-            }
-
-            return usersDictionary;
-        }
     }
 }

@@ -7,27 +7,19 @@ using System.Threading.Tasks;
 
 namespace OOP_Exam.Models
 {
-    public class BuyTransaction : Transaction
+    public record BuyTransaction(User User, Product Product) : Transaction(User, Product.Price)
     {
-        public BuyTransaction(User user, Product product) : base(user, product.Price)
-        {
-            Product = product;
-        }
-        public Product Product { get; init; }
-
-        public override string ToString() => $"Purchase | ({Product}) {base.ToString()}";
-
         public override void Execute()
         {
-            if (User.Balance < Product.Price && !Product.CanBeBoughtOnCredit)
-            {
-                throw new InsufficientCreditsException(User, Product);
-            }
-            if (!Product.Active)
-            {
-                throw new InactiveProductException(Product);
-            }
-            User.Balance -= Amount;
+            if (Product.Active is not 1) throw new InactiveProductException(Product);
+            if (User.Balance < Amount && !Product.CanBeBoughtOnCredit) throw new InsufficientCreditsException(User, Product);
+
+            User.Balance -= (int)Amount;
+        }
+
+        public override string? ToString()
+        {
+            return "Purchase " + base.ToString() + $", Product: {Product.Name}";
         }
     }
 }

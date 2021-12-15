@@ -9,11 +9,11 @@ namespace OOP_Exam.Models
     public interface ITallySystem
     {
         IEnumerable<Product> ActiveProducts { get; }
-        InsertCashTransaction AddCreditsToAccount(User user, int amount);
+        InsertCashTransaction AddCreditsToAccount(User user, uint amount);
         BuyTransaction BuyProduct(User user, Product product);
-        Product GetProductByID(int id); 
+        Product GetProductByID(uint id); 
         IEnumerable<Transaction> GetTransactions(User user, int count);
-        User GetUsers(Func<User, bool> predicate);
+        IEnumerable<User> GetUsers(Func<User, bool> predicate);
         User GetUserByUsername(string username);
         event UserBalanceNotification UserBalanceWarning;
     }

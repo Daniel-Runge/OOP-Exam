@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "OOP Exam": {
+      "commandName": "Project"
+    },
+    "Windows Terminal": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Users\\Runge\\AppData\\Local\\Microsoft\\WindowsApps\\wt.exe",
+      "commandLineArgs": "dotnet.exe run -p \"C:\\Users\\Runge\\source\\repos\\OOP Exam\\OOP Exam\"",
+      "workingDirectory": "C:\\Users\\Runge\\source\\repos\\OOP Exam\\OOP Exam"
+    }
+  }
+}

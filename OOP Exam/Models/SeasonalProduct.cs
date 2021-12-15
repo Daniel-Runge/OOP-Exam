@@ -11,21 +11,22 @@ namespace OOP_Exam.Models
         public DateTime SeasonStartDate { get; set; }
         public DateTime SeasonEndDate { get; set; }
 
-        public SeasonalProduct(int id, string name, int price, int active) : base(id, name, price, active)
+        public SeasonalProduct() : base()
         {
         }
 
-        public SeasonalProduct(int id, string name, int price, int active, DateTime startDate, DateTime endDate) : base(id, name, price, active)
+        public SeasonalProduct(string name, uint price, int active, DateTime startDate, DateTime endDate) : base(name, price, active)
         {
             SeasonStartDate = startDate;
             SeasonEndDate = endDate;
         }
 
-        public override bool Active
+        public override int Active
         {
-            get => base.Active
+            get => base.Active == 1
                    && DateTime.Now >= SeasonStartDate
-                   && DateTime.Now <= SeasonEndDate;
+                   && DateTime.Now <= SeasonEndDate 
+                   ? 1 : 0;
 
             set => base.Active = value;
         }

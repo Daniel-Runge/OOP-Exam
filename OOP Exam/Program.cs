@@ -1,33 +1,27 @@
-﻿using OOP_Exam.Models;
+﻿using OOP_Exam.Controller;
+using OOP_Exam.Models;
 using OOP_Exam.Services;
+using OOP_Exam.User_Interface;
 using System;
 using System.Collections.Generic;
 
 namespace OOP_Exam
 {
     public delegate void UserBalanceNotification(User user, decimal balance);
-
+    public delegate void TallySystemEvent(string command); // probably incomplete
     class Program
     {
         static void Main(string[] args)
         {
-            ITallySystem system = new TallySystem();
-            ICsvSerdeService deserializer = new CsvSerde();
-            IEnumerable<User> users = deserializer.Deserialize<User>(@"Data\users.csv", ',');
-            IEnumerable<Product> products = deserializer.Deserialize<Product>(@"Data\products.csv", ';');
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
+            ICsvSerdeService csvSerde = new CsvService();
 
-            foreach (var user in users)
-            {
-                Console.Write(user);
-                Console.WriteLine($" With ID: {user.ID} and current balance: {user.Balance}");
+            ITallySystem tallySystem = new TallySystem(csvSerde);
+            ITallySystemUI ui = new TallySystemCLI(tallySystem);
 
-            }
+            TallySystemController tc = new(ui, tallySystem);
 
-            foreach (var product in products)
-            {
-                Console.Write(product);
-                Console.WriteLine($" With ID: {product.ID} and status: {product.Active}");
-            }
+            ui.Start();
         }
     }
 }

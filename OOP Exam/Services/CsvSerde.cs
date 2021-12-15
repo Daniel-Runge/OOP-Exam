@@ -13,7 +13,7 @@ namespace OOP_Exam.Services
 {
     public class CsvSerde : ICsvSerdeService
     {
-        public IEnumerable<T> Deserialize<T>(string path, char delimiter)
+        public IEnumerable<T> Deserialize<T>(string path, char delimiter) where T : new()
         {
             ConstructorInfo constructorToBeCalled = typeof(T).GetConstructors()[0];
             ParameterInfo[] constructorParameters = constructorToBeCalled.GetParameters();
@@ -61,7 +61,7 @@ namespace OOP_Exam.Services
 
         private static string CleanString(string source)
         {
-            return RemoveHtmlTags(source).Trim('"');
+            return RemoveHtmlTags(source).Trim(new[] { '"', ' ' });
         }
 
         private static string RemoveHtmlTags(string source)
@@ -70,31 +70,3 @@ namespace OOP_Exam.Services
         }
     }
 }
-//public static T Deserialize<T>(string csvString, char csvSeparator) where T : class
-//{
-//    Type typeToBeReturned = typeof(T);
-//    object[] stringValues = csvString.Split(csvSeparator);
-//    ConstructorInfo constructorToBeCalled = typeToBeReturned.GetConstructors()[0];
-//    ParameterInfo[] constructorParameters = constructorToBeCalled.GetParameters();
-
-//    ConstructorInfo info = typeof(User).GetConstructors()[0];
-//    ParameterInfo paraminfo = info.GetParameters()[0];
-
-//    // typeof(User).GetConstructor(new Type[] { typeof(string), typeof(int) }).Invoke(new object[] { "as", 5 });
-
-//    // User newuser = new(id: 5, firstname: "Da", lastname: "da", username: "da", balance: 50, email: "da@email.com");
-
-
-//    object[] parametersToBePassedToConstructor = new object[constructorParameters.Length];
-
-//    for (int i = 0; i < constructorParameters.Length; i++)
-//    {
-//        var converter = TypeDescriptor.GetConverter(constructorParameters[i].ParameterType);
-//        parametersToBePassedToConstructor[i] = converter.ConvertFrom(stringValues[i]);
-//    }
-
-
-//    T result = (T)constructorToBeCalled.Invoke(parametersToBePassedToConstructor);
-//    //T result = (T)Activator.CreateInstance(typeToBeReturned, parametersToBePassedToConstructor);
-//    return result;
-//}

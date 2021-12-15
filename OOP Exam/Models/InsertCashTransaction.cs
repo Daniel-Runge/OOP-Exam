@@ -6,14 +6,16 @@ using System.Threading.Tasks;
 
 namespace OOP_Exam.Models
 {
-    public class InsertCashTransaction : Transaction
+    public record InsertCashTransaction(User User, uint Amount) : Transaction(User, Amount)
     {
-        public InsertCashTransaction(User user, decimal amount) : base(user, amount)
+        public override void Execute()
         {
+            User.Balance += (int)Amount;
         }
 
-        public override string ToString() => $"Deposit | {base.ToString()}";
-        public override void Execute() => User.Balance += Amount;
-
+        public override string? ToString()
+        {
+            return "Deposit " + base.ToString();
+        }
     }
 }

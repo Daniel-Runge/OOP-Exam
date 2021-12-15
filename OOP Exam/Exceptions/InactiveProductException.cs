@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace OOP_Exam.Exceptions
 {
-    public class InactiveProductException : Exception
+    public class InactiveProductException : ArgumentException
     {
-        public InactiveProductException(Product product) : base($"{product} is not active.")
+        public InactiveProductException(Product product) : base($"{product.Id} {product.Name} is not active. Flag: {product.Active}")
         {
             Product = product;
         }
